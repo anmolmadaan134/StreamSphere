@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom'
 import { AuthContext } from '../context/AuthContext'
 import { dislikeVideo, fetchVideoById, fetchVideos, likeVideo, updateViewsCount } from '../services/video'
 import { fetchComments, postComment } from '../services/comment'
+import { formatRelativeTime, formatViewCount } from '../utils/helper'
 
 const VideoPage = () => {
 
@@ -111,8 +112,80 @@ const VideoPage = () => {
     }
   }
 
+  if(loading){
+    return (
+      <div className='flex justify-center items-center h-screen'>
+        <div className='animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900'></div>
+      </div>
+    )
+  }
+
+  if(error){
+    return (
+      <div className='container mx-auto p-4 text-center'>
+        <p className='text-red-500 text-lg'>{error}</p>
+        <button onClick={()=>window.location.reload()}>Try Again</button>
+      </div>
+    )
+  }
+
+  if(!video) return null;
+
   return (
-    <div>VideoPage</div>
+    <div>
+      <div>
+        {/* Main Content */}
+        <div>
+          {/* Video Player */}
+          <div>
+            <video src={video.videoUrl}
+            post={video.thumbnailUrl}
+            controls 
+            className='w-full h-full'></video>
+          </div>
+          {/* Video Info */}
+          <div className='mt-4'>
+            <h1 className='text-xl font-bold'>{video.title}</h1>
+            <div className='flex items-center justify-between mt-2'>
+              <div className='text-gray-700'>
+                {formatViewCount(video.views)} views . {formatRelativeTime(video.createdAt)}
+              </div>
+
+              <div className='flex space-x-4'>
+                <button onClick={handleLike}
+                className={`flex items-center space-x-1 ${video.userLiked ?'text-blue-600':''}`}>
+                  <ThumbsUp size={18}/>
+                  <span>{video.likes || 0}</span>
+                </button>
+
+                <button 
+                  onClick={handleDislike}
+                  className={`flex items-center space-x-1 ${video.userDisliked ? 'text-blue-600' : ''}`}
+                >
+                  <ThumbsDown size={18} />
+                  <span>{video.dislikes || 0}</span>
+                </button>
+
+                <button className="flex items-center space-x-1">
+                  <Share size={18} />
+                  <span>Share</span>
+                </button>
+                
+                <button className="flex items-center space-x-1">
+                  <Save size={18} />
+                  <span>Save</span>
+                </button>
+                
+                <button className="flex items-center space-x-1">
+                  <Flag size={18} />
+                  <span>Report</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   )
 }
 
