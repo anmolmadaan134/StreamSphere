@@ -183,10 +183,140 @@ const VideoPage = () => {
               </div>
             </div>
           </div>
+
+          {/* Channel Info */}
+
+          <div className='flex items-center mt-4 pb-4 border-b'>
+            <Link to={`/channel/${video.user._id}`} className="flex items-center">
+              <div>
+                {video.user.profileImage?(
+                  <img src={video.user.profileImage} alt={video.user.username} className='w-full h-full object-cover' />
+                ):(
+                  <span className='text-lg font-semibold'>
+                    {video.user.username?.charAt(0).toUpperCase()}
+                  </span>
+                )}
+              </div>
+              <div className='ml-3'>
+                <p className='font-medium'>{video.user.username}</p>
+                <p className='text-sm text-gray-600'>{video.user.subscribers || 0}</p>
+              </div>
+            </Link>
+            <button>Subscribe</button>
+          </div>
+
+          {/* Video Description */}
+          <div>
+            <p>{video.description}</p>
+          </div>
+
+          {/* Comment Section */}
+
+          <div className='mt-6'>
+              <h3 className='text-lg font-medium mb-4'>{comments.length} Comments</h3>
+              {
+                user ? (
+                  <form onSubmit={handleCommentSubmit} className='mb-6'>
+                    <div>
+                      <div>
+                        {user.profileImage ? (
+                          <img src={user.profileImage} alt={user.username} className='w-full h-full object-cover' />
+                        ): (
+                          <span className='text-lg font-semibold'>{user.username?.charAt(0).toUpperCase()}</span>
+                        )}
+                      </div>
+                      <div className='ml-3 flex-1'>
+                        <textarea className='w-full border rounded p-2' 
+                        rows="2"
+                        placeholder='Add a comment..'
+                        value={commentText}
+                        onChange={(e)=>setCommentText(e.target.value)}></textarea>
+                        {commentError && (
+                          <p className='text-red-500 text-sm mt-1'>{commentError}</p>
+                        )}
+                        <div className='flex justify-end mt-2'>
+                          <button type='button' className='px-4 py-1 text-gray-700' onClick={()=>setCommentText('')}> 
+                            Cancel
+                          </button>
+                          <button type='submit'
+                          className='ml-2 px-4 py-1 bg-blue-600 text-white rounded disabled:bg-blue-300' 
+                          disabled={!commentText.trim()}>
+                            Comment
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </form>
+                ):(
+                  <div className="mb-6 p-4 bg-gray-50 text-center rounded">
+                <p>
+                  <Link to="/login" className="text-blue-600">Sign in</Link> to add a comment
+                </p>
+              </div>
+
+                )
+              }
+
+                {/* Comments list */}
+            <div className="space-y-4">
+              {comments.length > 0 ? (
+                comments.map((comment) => (
+                  <div key={comment._id} className="flex">
+                    <Link to={`/channel/${comment.user._id}`} className="flex-shrink-0">
+                      <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center overflow-hidden">
+                        {comment.user.profileImage ? (
+                          <img 
+                            src={comment.user.profileImage} 
+                            alt={comment.user.username} 
+                            className="w-full h-full object-cover" 
+                          />
+                        ) : (
+                          <span className="text-lg font-semibold">
+                            {comment.user.username?.charAt(0).toUpperCase()}
+                          </span>
+                        )}
+                      </div>
+                    </Link>
+                    <div className="ml-3">
+                      <div className="flex items-center">
+                        <Link to={`/channel/${comment.user._id}`} className="font-medium">
+                          {comment.user.username}
+                        </Link>
+                        <span className="ml-2 text-sm text-gray-500">
+                          {formatRelativeTime(comment.createdAt)}
+                        </span>
+                      </div>
+                      <p className="mt-1">{comment.text}</p>
+                      <div className="flex items-center mt-2 space-x-4">
+                        <button className="flex items-center text-sm">
+                          <ThumbsUp size={14} className="mr-1" />
+                          {comment.likes || 0}
+                        </button>
+                        <button className="flex items-center text-sm">
+                          <ThumbsDown size={14} className="mr-1" />
+                        </button>
+                        <button className="text-sm">Reply</button>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="text-center text-gray-500">No comments yet</p>
+              )}
+          </div>
+        </div>
+      </div>
+
+        {/* Sidebar with related videos */}
+      <div className="lg:w-1/3">
+          <h3 className="text-lg font-medium mb-4">Related Videos</h3>
+          <VideoList videos={relatedVideos} layout="sidebar" />
         </div>
       </div>
     </div>
+   
   )
 }
 
 export default VideoPage
+
