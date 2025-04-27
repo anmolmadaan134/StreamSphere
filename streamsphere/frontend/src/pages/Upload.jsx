@@ -2,6 +2,8 @@ import React, { useRef, useState } from 'react'
 import { useContext } from 'react'
 import { AuthContext } from '../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
+import { createVideo, uploadVideo } from '../services/video'
+import { Upload as UploadIcon, X, CheckCircle, AlertCircle } from 'react-feather';
 
 const Upload = () => {
 
@@ -110,8 +112,83 @@ const Upload = () => {
     setThumbnailPreview(null);
   };
 
+  const handleSubmit = async(e)=>{
+    e.preventDefault();
+
+    if(!videoFile){
+      setUploadError('Please select a video file to upload')
+      return;
+
+    }
+
+    if(!title.trim()){
+      setUploadError('Please enter a title for your video')
+      return;
+    }
+
+    setIsUploading(true)
+    setUploadError(null);
+
+    try {
+        //Process tags
+        const tagArray = tags.split(',').map(tag=>tag.trim()).filter(tag=>tag.length>0)
+
+        //First uploading the video file
+        const videoData = await uploadVideo(videoFile, (progress)=>{
+          setUploadProgress(progress)
+        })
+
+        //if there's a thumbnail, upload it
+
+        let thumbnailUrl = null;
+        if(thumbnailFile){
+          const thumbnailData = await uploadVideo(thumbnailFile)
+          thumbnailUrl = thumbnailData.url
+        }
+
+        //Create a video in the database
+        const videoDetails = await createVideo({
+          title,
+          description,
+          category,
+          tags:tagArray,
+          videoUrl: videoData.url,
+          thumbnailUrl:thumbnailUrl || videoData.thumbnailUrl
+        })
+
+        setUploadSuccess(true)
+
+        //Redirect to the video page after a short delay
+        setTimeout(() => {
+          navigate(`/video/${videoDetails._id}`)
+        }, 2000);
+      
+    } catch (error) {
+      console.error('Error uploading video:', error);
+      setUploadError('Failed to upload video. Please try again.');
+      setIsUploading(false);
+    }
+  }
+
+  if(uploadSuccess){
+    return(
+      <div>
+        <div>
+          <CheckCircle className='mx-auto text-green-500' size={48}/>
+          <h2>Upload Successful</h2>
+          <p>Your video has been uploaded and is being processed</p>
+          <p>You'll be redirected to your video page in a moment</p>
+        </div>
+      </div>
+    )
+  }
+
+
+
   return (
-    <div>Upload</div>
+    <div>
+      
+    </div>
   )
 }
 
