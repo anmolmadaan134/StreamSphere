@@ -186,7 +186,52 @@ const Upload = () => {
 
 
   return (
-    <div>
+    <div className='container mx-auto p-4'>
+      <h1 className='text-2xl font-bold mb-6'>Upload Video</h1>
+      
+      {uploadError && (
+        <div className="bg-red-50 text-red-700 p-4 rounded mb-6 flex items-start">
+          <AlertCircle className="flex-shrink-0 mt-0.5 mr-2" size={18} />
+          <p>{uploadError}</p>
+        </div>
+      )}
+      
+      <form onSubmit={handleSubmit} className='space-y-6'>
+        {/* Video Upload Area */}
+        {
+          !videoFile ? (
+            <div 
+              className={`border-2 border-dashed rounded-lg p-8 text-center ${
+                dragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300'
+              }`}
+              onDragEnter={handleDrag}
+              onDragOver={handleDrag}
+              onDragLeave={handleDrag}
+              onDrop={handleDrop}
+            >
+              <UploadIcon className="mx-auto text-gray-500 mb-4" size={48} />
+            <h3 className="text-lg font-medium mb-2">Drag and drop video file</h3>
+            <p className="text-gray-500 mb-4">or</p>
+            <Button
+              type="button"
+              onClick={() => fileInputRef.current.click()}
+            >
+              Select File
+            </Button>
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileChange}
+              accept="video/*"
+              className="hidden"
+            />
+            <p className="mt-4 text-sm text-gray-500">
+              Supported formats: MP4, WebM, AVI, MOV
+            </p>
+          </div>
+        ) 
+        }
+      </form>
       
     </div>
   )
