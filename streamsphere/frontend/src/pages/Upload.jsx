@@ -229,8 +229,175 @@ const Upload = () => {
               Supported formats: MP4, WebM, AVI, MOV
             </p>
           </div>
-        ) 
+        ) : (
+          <div className="border rounded-lg p-4">
+            <div className="flex justify-between items-center">
+              <div className="flex items-center">
+                <div className="bg-blue-100 p-3 rounded">
+                  <UploadIcon className="text-blue-600" size={24} />
+                </div>
+                <div className="ml-4">
+                  <p className="font-medium">{videoFile.name}</p>
+                  <p className="text-sm text-gray-500">
+                    {Math.round(videoFile.size / 1024 / 1024 * 10) / 10} MB
+                  </p>
+                </div>
+              </div>
+              <button 
+                type="button" 
+                onClick={handleRemoveVideo}
+                className="text-gray-500 hover:text-red-500"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            
+            {isUploading && (
+              <div className="mt-4">
+                <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-blue-600 rounded-full" 
+                    style={{ width: `${uploadProgress}%` }}
+                  ></div>
+                </div>
+                <p className="text-sm text-gray-600 mt-1">
+                  Uploading: {uploadProgress}%
+                </p>
+              </div>
+            )}
+          </div>
+        )
         }
+
+        {/* Video Details */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="space-y-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Title *
+              </label>
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="w-full p-2 border rounded"
+                placeholder="Add a title that describes your video"
+                required
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Description
+              </label>
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="w-full p-2 border rounded"
+                rows="5"
+                placeholder="Tell viewers about your video"
+              ></textarea>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Category
+              </label>
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className="w-full p-2 border rounded"
+              >
+                <option value="">Select a category</option>
+                {categories.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                  </option>
+                ))}
+              </select>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Tags
+              </label>
+              <input
+                type="text"
+                value={tags}
+                onChange={(e) => setTags(e.target.value)}
+                className="w-full p-2 border rounded"
+                placeholder="Add tags separated by commas"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Tags help viewers find your video
+              </p>
+            </div>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Thumbnail
+            </label>
+            
+            {!thumbnailPreview ? (
+              <div className="border-2 border-dashed rounded-lg p-4 text-center">
+                <button
+                  type="button"
+                  onClick={() => document.getElementById('thumbnail-upload').click()}
+                  className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+                >
+                  Upload Thumbnail
+                </button>
+                <input
+                  id="thumbnail-upload"
+                  type="file"
+                  onChange={handleThumbnailChange}
+                  accept="image/*"
+                  className="hidden"
+                />
+                <p className="text-xs text-gray-500 mt-2">
+                  Recommended: 1280×720 (16:9 ratio)
+                </p>
+              </div>
+            ) : (
+              <div className="relative">
+                <img 
+                  src={thumbnailPreview} 
+                  alt="Thumbnail preview" 
+                  className="w-full rounded" 
+                />
+                <button
+                  type="button"
+                  onClick={handleRemoveThumbnail}
+                  className="absolute top-2 right-2 bg-gray-800 bg-opacity-70 text-white p-1 rounded-full"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            )}
+            
+            <p className="text-sm text-gray-600 mt-2">
+              If you don't upload a thumbnail, one will be generated from your video.
+            </p>
+          </div>
+        </div>
+        
+        <div className="pt-4 border-t flex justify-end">
+          <Button
+            type="button"
+            variant="secondary"
+            className="mr-2"
+            onClick={() => navigate('/')}
+          >
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            disabled={isUploading || !videoFile || !title.trim()}
+          >
+            {isUploading ? 'Uploading...' : 'Upload Video'}
+          </Button>
+        </div>
       </form>
       
     </div>
