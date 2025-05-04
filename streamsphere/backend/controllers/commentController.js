@@ -1,4 +1,5 @@
-const {validationResult} = require('express-validator')
+const {validationResult} = require('express-validator');
+const Comment = require('../models/Comment');
 
 
 // Create a comment
@@ -53,3 +54,40 @@ exports.createComment = async (req, res) => {
    res.status(500).send('Server Error');
  }
 };  
+
+//Get Comments for video
+exports.getVideoComments = async(req,res)=>{
+  try{
+
+    const {videoId} = req.params;
+
+    //Get top level comments
+
+    const comments = await Comment.find({
+      video:videoId,
+      parentComment:null
+    })
+    .populate('user','name username avatar')
+    .sort({createdAt:-1})
+
+    //For each comment, get its replies
+    const commentsWithReplies = await Promise.all(comments.map(async (comment) => {
+      const commentObj = comment.toObject();
+      
+      if (comment.replies.length > 0) {
+        commentObj.replies = await Comment.find({
+          _id: { $in: comment.replies }
+        })
+        .populate('user', 'name username avatar')
+        .sort({ createdAt: 1 });
+      }
+      
+      return commentObj;
+    }));
+    
+    res.json(commentsWithReplies);
+  }catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+}
