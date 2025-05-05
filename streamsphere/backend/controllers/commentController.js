@@ -91,3 +91,82 @@ exports.getVideoComments = async(req,res)=>{
     res.status(500).send('Server Error');
   }
 }
+
+
+// Like a comment
+exports.likeComment = async (req, res) => {
+  try {
+    const { commentId } = req.params;
+    const userId = req.user.id;
+    
+    const comment = await Comment.findById(commentId);
+    if (!comment) {
+      return res.status(404).json({ message: 'Comment not found' });
+    }
+    
+    // Check if already liked
+    if (comment.likes.includes(userId)) {
+      return res.status(400).json({ message: 'Comment already liked' });
+    }
+    
+    // Remove from dislikes if present
+    if (comment.dislikes.includes(userId)) {
+      comment.dislikes = comment.dislikes.filter(
+        dislike => dislike.toString() !== userId
+      );
+    }
+    
+    // Add to likes
+    comment.likes.push(userId);
+    await comment.save();
+    
+    res.json({
+      likes: comment.likes.length,
+      dislikes: comment.dislikes.length,
+      liked: true,
+      disliked: false
+    });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+};
+
+// Dislike a comment
+exports.dislikeComment = async (req, res) => {
+  try {
+    const { commentId } = req.params;
+    const userId = req.user.id;
+    
+    const comment = await Comment.findById(commentId);
+    if (!comment) {
+      return res.status(404).json({ message: 'Comment not found' });
+    }
+    
+    // Check if already disliked
+    if (comment.dislikes.includes(userId)) {
+      return res.status(400).json({ message: 'Comment already disliked' });
+    }
+    
+    // Remove from likes if present
+    if (comment.likes.includes(userId)) {
+      comment.likes = comment.likes.filter(
+        like => like.toString() !== userId
+      );
+    }
+    
+    // Add to dislikes
+    comment.dislikes.push(userId);
+    await comment.save();
+    
+    res.json({
+      likes: comment.likes.length,
+      dislikes: comment.dislikes.length,
+      liked: false,
+      disliked: true
+    });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+};
