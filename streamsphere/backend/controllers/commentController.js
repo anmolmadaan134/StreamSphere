@@ -169,4 +169,41 @@ exports.dislikeComment = async (req, res) => {
     console.error(err.message);
     res.status(500).send('Server Error');
   }
+}
+
+// Delete a comment
+exports.deleteComment = async (req, res) => {
+  try {
+    const { commentId } = req.params;
+    const userId = req.user.id;
+    
+    const comment = await Comment.findById(commentId);
+    if (!comment) {
+      return res.status(404).json({ message: 'Comment not found' });
+    }
+    
+    // Check if user owns the comment
+    if (comment.user.toString() !== userId) {
+      return res.status(401).json({ message: 'Not authorized to delete this comment' });
+    }
+    
+    // If it's a reply, remove from parent's replies array
+    if (comment.parentComment) {
+      await Comment.findByIdAndUpdate(
+        comment.parentComment,
+        { $pull: { replies: commentId } }
+      );
+    }
+    
+    // Delete all replies if it's a parent comment
+    if (comment.replies.length > 0) {
+      await Comment.deleteMany({ _id: { $in: comment.replies } });
+    }
+    
+    await comment.remove();
+    res.json({ message: 'Comment deleted' });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
 };
