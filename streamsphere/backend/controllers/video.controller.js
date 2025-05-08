@@ -297,3 +297,117 @@ exports.getVideoStatus = async(req,res)=>{
         });
     }
 }
+
+// Like a video
+exports.likeVideo = async (req, res) => {
+    try {
+      const { videoId } = req.params;
+      const userId = req.user.id;
+      
+      const video = await Video.findById(videoId);
+      if (!video) {
+        return res.status(404).json({ message: 'Video not found' });
+      }
+      
+      // Check if already liked
+      if (video.likes.includes(userId)) {
+        // Unlike if already liked
+        video.likes = video.likes.filter(
+          like => like.toString() !== userId
+        );
+        await video.save();
+        
+        return res.json({
+          likes: video.likes.length,
+          dislikes: video.dislikes.length,
+          liked: false,
+          disliked: false
+        });
+      }
+      
+      // Remove from dislikes if present
+      if (video.dislikes.includes(userId)) {
+        video.dislikes = video.dislikes.filter(
+          dislike => dislike.toString() !== userId
+        );
+      }
+      
+      // Add to likes
+      video.likes.push(userId);
+      await video.save();
+      
+      res.json({
+        likes: video.likes.length,
+        dislikes: video.dislikes.length,
+        liked: true,
+        disliked: false
+      });
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).send('Server Error');
+    }
+  };
+  
+  // Dislike a video
+  exports.dislikeVideo = async (req, res) => {
+    try {
+      const { videoId } = req.params;
+      const userId = req.user.id;
+      
+      const video = await Video.findById(videoId);
+      if (!video) {
+        return res.status(404).json({ message: 'Video not found' });
+      }
+      
+      // Check if already disliked
+      if (video.dislikes.includes(userId)) {
+        // Remove dislike if already disliked
+        video.dislikes = video.dislikes.filter(
+          dislike => dislike.toString() !== userId
+        );
+        await video.save();
+        
+        return res.json({
+          likes: video.likes.length,
+          dislikes: video.dislikes.length,
+          liked: false,
+          disliked: false
+        });
+      }
+      
+      // Remove from likes if present
+      if (video.likes.includes(userId)) {
+        video.likes = video.likes.filter(
+          like => like.toString() !== userId
+        );
+      }
+      
+      // Add to dislikes
+      video.dislikes.push(userId);
+      await video.save();
+      
+      res.json({
+        likes: video.likes.length,
+        dislikes: video.dislikes.length,
+        liked: false,
+        disliked: true
+      });
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).send('Server Error');
+    }
+  };
+  
+  // routes/videos.js - Add these routes
+  /*
+  // @route   PUT /api/videos/like/:videoId
+  // @desc    Like a video
+  // @access  Private
+  router.put('/like/:videoId', auth, videoController.likeVideo);
+  
+  // @route   PUT /api/videos/dislike/:videoId
+  // @desc    Dislike a video
+  // @access  Private
+  router.put('/dislike/:videoId', auth, videoController.dislikeVideo);
+  */
+  
