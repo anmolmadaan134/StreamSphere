@@ -230,3 +230,49 @@ exports.subscribe = async (req, res) => {
     res.status(500).send('Server Error');
   }
 }
+// Get user's watch history
+exports.getWatchHistory = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id)
+      .select('watchHistory')
+      .populate({
+        path: 'watchHistory.video',
+        select: 'title thumbnail duration user views createdAt',
+        populate: {
+          path: 'user',
+          select: 'name username avatar'
+        }
+      });
+    
+    // Sort by most recently watched
+    const watchHistory = user.watchHistory.sort((a, b) => 
+      new Date(b.watchedAt) - new Date(a.watchedAt)
+    );
+    
+    res.json(watchHistory);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+};
+
+// Get user's liked videos
+exports.getLikedVideos = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id)
+      .select('likedVideos')
+      .populate({
+        path: 'likedVideos',
+        select: 'title thumbnail duration user views createdAt',
+        populate: {
+          path: 'user',
+          select: 'name username avatar'
+        }
+      });
+    
+    res.json(user.likedVideos);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+};
