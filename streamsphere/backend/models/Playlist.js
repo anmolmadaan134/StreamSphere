@@ -2,6 +2,8 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
+//Playlist schema
+
 const PlaylistSchema = new Schema({
   title: {
     type: String,
